@@ -35,4 +35,24 @@ class PhotoUser extends Pivot
     {
         return $this->belongsTo(User::class);
     }
+
+        /**
+     * function that boot at model creation
+     */
+    protected static function booted()
+    {
+        /**
+         * Verify the user belongs to the chosen groups before being able to comment
+         *
+         * @param Illuminate\Database\Eloquent\Model;
+         * @return boolean;
+         */
+        static::creating(function($photoUser){
+            $photo = Photo::where('id', $photoUser->photo_id)->first();
+            $group_user = GroupUser::where('user_id', $photoUser->user_id)
+                ->where('group_id', $photo->group->id);
+            if(!$group_user->exists()) return false;
+            return true;
+        });
+    }
 }
